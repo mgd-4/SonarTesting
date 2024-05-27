@@ -1,0 +1,46 @@
+<.header>
+  Your post says
+  <:subtitle><%= @post.body %></:subtitle>
+  <:actions>
+    <.link patch={~p"/posts/#{@post}/show/new_comment"} phx-click={JS.push_focus()}>
+      <.button>Add comment</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="comments" rows={@streams.comments}>
+  <:col :let={{_id, comment}}><%= comment.body %></:col>
+  <:action :let={{_id, comment}}>
+    <div class="sr-only">
+      <.link navigate={~p"/posts/#{@post}"}>Show</.link>
+    </div>
+    <.link patch={~p"/posts/#{@post}/edit_comment/#{comment}"}>Edit</.link>
+  </:action>
+  <:action :let={{id, comment}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: comment.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.back navigate={~p"/posts"}>Back to posts</.back>
+
+<.modal
+  :if={@live_action in [:new_comment, :edit_comment]}
+  id="comment-modal"
+  show
+  on_cancel={JS.patch(~p"/posts/#{@post}")}
+>
+  <.live_component
+    module={SonarWeb.PostLive.FormComponent}
+    id={@comment.id || :new_comment}
+    title={@page_title}
+    action={@live_action}
+    comment={@comment}
+    post_id={@post.id}
+    patch={~p"/posts/#{@post}"}
+  />
+</.modal>
